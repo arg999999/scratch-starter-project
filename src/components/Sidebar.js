@@ -1,32 +1,46 @@
 import React from "react";
-import Icon from "./Icon";
+import { Block } from "./Block";
+import { BLOCK_DEFS, CATEGORIES } from "../engine/blocks";
 
-export default function Sidebar() {
+const paletteBlock = (type) => ({
+  id: `palette-${type}`,
+  type,
+  params: { ...BLOCK_DEFS[type].defaults },
+  children: [],
+});
+
+// Block palette. Only the blocks required by the assignment are listed (see CATEGORIES).
+// Dropping a workspace block back onto the palette deletes it.
+export default function Sidebar({ locked, onBlockPointerDown, deleteHover }) {
   return (
-    <div className="w-60 flex-none h-full overflow-y-auto flex flex-col items-start p-2 border-r border-gray-200">
-      <div className="font-bold"> {"Events"} </div>
-      <div className="flex flex-row flex-wrap bg-yellow-500 text-white px-2 py-1 my-2 text-sm cursor-pointer">
-        {"When "}
-        <Icon name="flag" size={15} className="text-green-600 mx-2" />
-        {"clicked"}
-      </div>
-      <div className="flex flex-row flex-wrap bg-yellow-500 text-white px-2 py-1 my-2 text-sm cursor-pointer">
-        {"When this sprite clicked"}
-      </div>
-      <div className="font-bold"> {"Motion"} </div>
-      <div className="flex flex-row flex-wrap bg-blue-500 text-white px-2 py-1 my-2 text-sm cursor-pointer">
-        {"Move 10 steps"}
-      </div>
-      <div className="flex flex-row flex-wrap bg-blue-500 text-white px-2 py-1 my-2 text-sm cursor-pointer">
-        {"Turn "}
-        <Icon name="undo" size={15} className="text-white mx-2" />
-        {"15 degrees"}
-      </div>
-      <div className="flex flex-row flex-wrap bg-blue-500 text-white px-2 py-1 my-2 text-sm cursor-pointer">
-        {"Turn "}
-        <Icon name="redo" size={15} className="text-white mx-2" />
-        {"15 degrees"}
-      </div>
+    <div
+      data-palette
+      className={`w-56 md:w-64 flex-none h-full overflow-y-auto flex flex-col items-start p-3 border-r border-gray-200 transition-colors ${
+        deleteHover ? "bg-red-50" : ""
+      }`}
+    >
+      {CATEGORIES.map((cat) => (
+        <div key={cat.id} className="w-full mb-3">
+          <div className="flex items-center font-bold text-gray-700 mb-1">
+            <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ background: cat.color }} />
+            {cat.label}
+          </div>
+          {cat.types.map((type) => {
+            const block = paletteBlock(type);
+            return (
+              <div key={type} className="my-2" style={{ opacity: locked ? 0.6 : 1 }}>
+                <Block
+                  block={block}
+                  mode="palette"
+                  locked={locked}
+                  onPointerDown={locked ? null : onBlockPointerDown}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      {deleteHover && <div className="text-sm text-red-600 mt-2">Drop here to delete</div>}
     </div>
   );
 }
